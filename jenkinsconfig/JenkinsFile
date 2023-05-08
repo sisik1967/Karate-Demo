@@ -1,0 +1,30 @@
+pipeline {
+        agent any
+        parameters {
+        string(name: 'RunnerName', defaultValue: "CDArticleSimulation", description: '')
+        string(name: 'TagName', defaultValue: "load", description: '')
+        string(name: 'UserCount', defaultValue: "10", description: '')
+        string(name: 'Duration', defaultValue: "10", description: '')
+        string(name: 'ConstantDuration', defaultValue: "10", description: '')
+        string(name: 'ConstantUser', defaultValue: "10", description: '')
+        choice(name: 'ortam', choices: ['sta', 'qa', 'uat'], description: '')
+        string(name: 'FeatureName', defaultValue: "createArticle", description: '')
+    }
+    stages {
+            stage('Running Test') {
+                    steps {
+                        script {
+                            sh """
+                                mvn -s ./jenkinsconfig/settings.xml test-compile gatling:test -Dgatling.simulationClass=performanceRunners.${RunnerName} -DuserCount=${UserCount} -Dduration=${Duration} -DconstantDuration=${ConstantDuration} -DconstantUser=${ConstantUser} -DfeatureName=${FeatureName} -DtagName=${TagName}
+                            """
+                        }
+                    }
+                    post {
+                           always {
+                                gatlingArchive()
+                           }
+                    }
+            }
+    }
+
+}
